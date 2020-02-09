@@ -12,6 +12,10 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -29,11 +33,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.security.Principal;
+
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int DEFAULT_ZOOM = 15;
+    private static final int CLICK = 100;
     private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final String TAG = MapsActivity.class.getSimpleName();
     private GoogleMap mMap;
@@ -42,11 +49,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private boolean mLocationPermissionGranted;
     private Location mLastKnownLocation;
+    private LinearLayout Panelinfo;
+    private TextView Info;
+    private LinearLayout Principal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        Panelinfo = findViewById(R.id.Panelinfo);
+        Info = (TextView) findViewById(R.id.Info);
+
+
 
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getApplicationContext());
 
@@ -58,6 +72,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mGeoDataClient = Places.getGeoDataClient(this, null);
             mPlaceDetectionClient = Places.getPlaceDetectionClient(this, null);
             mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
         }
 
 
@@ -83,6 +98,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        mMap.setOnMapClickListener(point -> {
+
+            if (point != null) {
+
+                mMap.clear();
+                mMap.addMarker(new MarkerOptions().position(new LatLng(point.latitude,
+                        point.longitude)));
+
+            }
+
+        });
+
         // Add a marker in Sydney and move the camera
       //  LatLng sydney = new LatLng(-34, 151);
       //  mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -93,6 +120,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         updateLocationUI();
 
         getDeviceLocation();
+
+
 
 
 
@@ -114,14 +143,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         if (task.isSuccessful()) {
                             // Set the map's camera position to the current location of the device.
                             mLastKnownLocation = task.getResult();
+
                             if (mLastKnownLocation != null) {
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(mLastKnownLocation.getLatitude(),
                                                 mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
 
-                                
-                                mMap.addMarker(new MarkerOptions().position(new LatLng(mLastKnownLocation.getLatitude(),
-                                        mLastKnownLocation.getLongitude())).title("Marker in: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude()));
+                                Info.setText("Usted está en:"+ "\n Lt: " + mLastKnownLocation.getLatitude() + "\n Lg: " + mLastKnownLocation.getLongitude());
+                               // mMap.addMarker(new MarkerOptions().position(new LatLng(mLastKnownLocation.getLatitude(),
+                               //mLastKnownLocation.getLongitude())).title("Marker in: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude()));
 
 
                             }

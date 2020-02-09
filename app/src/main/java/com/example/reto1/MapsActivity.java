@@ -88,6 +88,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
+        getLocationPermission();
+
         updateLocationUI();
 
         // Get the current location of the device and set the position of the map.
@@ -171,8 +173,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (mLocationPermissionGranted) {
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
+            } else {
+                mMap.setMyLocationEnabled(false);
+                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                mLastKnownLocation = null;
+                getLocationPermission();
             }
-
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }

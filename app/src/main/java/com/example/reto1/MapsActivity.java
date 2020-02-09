@@ -84,16 +84,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+      //  LatLng sydney = new LatLng(-34, 151);
+      //  mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+      //  mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         getLocationPermission();
 
         updateLocationUI();
 
-        // Get the current location of the device and set the position of the map.
         getDeviceLocation();
+
+
+
+        // Get the current location of the device and set the position of the map.
+
     }
 
     private void getDeviceLocation() {
@@ -114,6 +118,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(mLastKnownLocation.getLatitude(),
                                                 mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+
+                                
+                                mMap.addMarker(new MarkerOptions().position(new LatLng(mLastKnownLocation.getLatitude(),
+                                        mLastKnownLocation.getLongitude())).title("Marker in: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude()));
+
+
                             }
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
@@ -173,6 +183,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (mLocationPermissionGranted) {
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+
             } else {
                 mMap.setMyLocationEnabled(false);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);

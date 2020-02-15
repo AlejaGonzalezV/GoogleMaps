@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.security.Principal;
 
@@ -52,15 +54,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LinearLayout Panelinfo;
     private TextView Info;
     private LinearLayout Principal;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        Panelinfo = findViewById(R.id.Panelinfo);
         Info = (TextView) findViewById(R.id.Info);
+        fab = findViewById(R.id.fab);
+        fab.setOnClickListener(
 
+                (v) -> {
 
+                   Intent i = new Intent(this, MarcadoresActivity.class);
+                   startActivity(i);
+
+                }
+
+        );
 
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getApplicationContext());
 

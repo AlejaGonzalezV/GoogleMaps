@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/Principal"
     android:layout_width="match_parent"
@@ -10,22 +11,33 @@
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="663dp"
-        tools:context=".MapsActivity" />
-
-    <LinearLayout
-        android:id="@+id/Panelinfo"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        tools:context=".MapsActivity">
 
         <TextView
             android:id="@+id/Info"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="85dp"
+            android:background="#700398fc"
+            android:layout_marginTop="682dp"
+            android:textColor="#ffffff"
             android:textAlignment="center" />
-    </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="5dp"
+
+            app:srcCompat="@drawable/icon" />
+
+
+    </fragment>
+
+
+
 
 </LinearLayout>
 

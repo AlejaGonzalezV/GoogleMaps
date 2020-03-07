@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -18,43 +19,68 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.PlaceDetectionClient;
+import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.PlacesOptions;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.json.JSONObject;
+
+import java.io.Serializable;
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int DEFAULT_ZOOM = 15;
-    private static final int CLICK = 100;
     private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final String TAG = MapsActivity.class.getSimpleName();
     private GoogleMap mMap;
-    private GeoDataClient mGeoDataClient;
-    private PlaceDetectionClient mPlaceDetectionClient;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private boolean mLocationPermissionGranted;
     private Location mLastKnownLocation;
-    private LinearLayout Panelinfo;
     private TextView Info;
-    private LinearLayout Principal;
     private FloatingActionButton fab;
+    private FloatingActionButton agregarBut;
+    private boolean select = false;
+    private String latlongM = "";
+    private Markers marker;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,49 +88,62 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
         Info = (TextView) findViewById(R.id.Info);
         fab = findViewById(R.id.fab);
+        agregarBut = findViewById(R.id.agregarBut);
+
+
+
         fab.setOnClickListener(
 
                 (v) -> {
 
                    Intent i = new Intent(this, MarcadoresActivity.class);
-                   startActivity(i);
+                   if(select){
+
+                       i.putExtra("marker", latlongM);
+                       startActivityForResult(i,11);
+
+                   } else {
+
+                       startActivity(i);
+
+                   }
+
+
+
 
                 }
 
         );
 
-        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getApplicationContext());
-
-        if(status == ConnectionResult.SUCCESS){
+        if(CheckGooglePlayServices()){
 
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
-            mGeoDataClient = Places.getGeoDataClient(this, null);
-            mPlaceDetectionClient = Places.getPlaceDetectionClient(this, null);
             mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
         }
-
 
          else {
 
-            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status,(Activity)getApplicationContext(),10);
-
+            finish();
         }
 
     }
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+    private boolean CheckGooglePlayServices() {
+        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+        int result = googleAPI.isGooglePlayServicesAvailable(this);
+        if(result != ConnectionResult.SUCCESS) {
+            if(googleAPI.isUserResolvableError(result)) {
+                googleAPI.getErrorDialog(this, result,
+                        0).show();
+            }
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -116,29 +155,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions().position(new LatLng(point.latitude,
                         point.longitude)));
+                select = true;
+                latlongM=point.latitude+":"+point.longitude;
 
             }
 
         });
 
-        // Add a marker in Sydney and move the camera
-      //  LatLng sydney = new LatLng(-34, 151);
-      //  mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-      //  mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
         getLocationPermission();
-
-        updateLocationUI();
 
         getDeviceLocation();
 
+        updateLocationUI();
 
 
-
-
-        // Get the current location of the device and set the position of the map.
 
     }
+
 
     private void getDeviceLocation() {
         /*
@@ -160,9 +193,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         new LatLng(mLastKnownLocation.getLatitude(),
                                                 mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
 
-                                Info.setText("Usted está en:"+ "\n Lt: " + mLastKnownLocation.getLatitude() + "\n Lg: " + mLastKnownLocation.getLongitude());
-                               // mMap.addMarker(new MarkerOptions().position(new LatLng(mLastKnownLocation.getLatitude(),
-                               //mLastKnownLocation.getLongitude())).title("Marker in: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude()));
+
+
+                               // Info.setText("Usted está en:"+ "\n Lt: " + mLastKnownLocation.getLatitude() + "\n Lg: " + mLastKnownLocation.getLongitude());
 
 
                             }
@@ -182,8 +215,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+
+    private void updateLocationUI() {
+        if (mMap == null) {
+            return;
+        }
+        try {
+            if (mLocationPermissionGranted) {
+                mMap.setMyLocationEnabled(true);
+                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+
+            } else {
+                mMap.setMyLocationEnabled(false);
+                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                mLastKnownLocation = null;
+                getLocationPermission();
+            }
+        } catch (SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage());
+        }
+    }
+
     private void getLocationPermission() {
         /*
+
          * Request location permission, so that we can get the location of the
          * device. The result of the permission request is handled by a callback,
          * onRequestPermissionsResult.
@@ -216,24 +272,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         updateLocationUI();
     }
 
-    private void updateLocationUI() {
-        if (mMap == null) {
-            return;
-        }
-        try {
-            if (mLocationPermissionGranted) {
-                mMap.setMyLocationEnabled(true);
-                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 11 && resultCode == RESULT_OK){
 
 
-            } else {
-                mMap.setMyLocationEnabled(false);
-                mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                mLastKnownLocation = null;
-                getLocationPermission();
-            }
-        } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
+            Serializable serializable = data.getExtras().getSerializable("marker");
+            marker = (Markers) serializable;
+
+            MarkerOptions options = new MarkerOptions().position(new LatLng(Double.valueOf(marker.getLt()),
+                            Double.valueOf(marker.getLg()))).title(marker.getName());
+
+            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+
+        } else {
+
+
+
         }
+
+
     }
 }

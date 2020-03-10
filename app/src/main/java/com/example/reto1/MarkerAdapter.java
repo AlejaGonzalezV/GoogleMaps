@@ -1,9 +1,11 @@
 package com.example.reto1;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.Marker;
@@ -39,6 +41,7 @@ public class MarkerAdapter extends BaseAdapter {
     public void deleteMarker(Markers marker){
 
         marcadores.remove(marker);
+        notifyDataSetChanged();
 
     }
 
@@ -48,8 +51,35 @@ public class MarkerAdapter extends BaseAdapter {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View row = inflater.inflate(R.layout.marker_row, null, false);
         TextView nameField = row.findViewById(R.id.nameField);
+        Button buttonUbi = row.findViewById(R.id.buttonUbi);
+        Button buttonDel = row.findViewById(R.id.buttonDel);
+
+        buttonDel.setOnClickListener(
+
+                (v) -> {
+
+                    Log.i("AAAAAAA", marcadores.size() + "");
+                   deleteMarker(marcadores.get(position));
+                    Log.i("AAAAAAA DESPUES", marcadores.size() + "");
+
+                }
+
+        );
+
+        buttonUbi.setOnClickListener(
+
+                (v) ->{
+
+
+                    MarcadoresActivity mar = new MarcadoresActivity();
+                    mar.llamar(marcadores.get(position));
+
+
+                }
+
+        );
+
         nameField.setText(marcadores.get(position).getName());
-        marcadores.add(new Markers("Universidad Icesi", 3.341571, -76.530198));
         return row;
 
     }
@@ -57,7 +87,7 @@ public class MarkerAdapter extends BaseAdapter {
     public void addMarker(Markers marker){
 
          marcadores.add(marker);
-         notifyDataSetChanged();
+        notifyDataSetChanged();
 
     }
 

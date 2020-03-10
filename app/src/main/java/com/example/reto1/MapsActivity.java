@@ -97,6 +97,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 (v) -> {
 
                    Intent i = new Intent(this, MarcadoresActivity.class);
+                   startActivity(i);
+
                    if(select){
 
                        i.putExtra("marker", latlongM);
@@ -107,9 +109,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                        startActivity(i);
 
                    }
-
-
-
 
                 }
 

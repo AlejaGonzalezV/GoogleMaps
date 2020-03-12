@@ -1,4 +1,4 @@
-package co.edu.appsmobile.locationexample;
+package com.example.reto1;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +9,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
